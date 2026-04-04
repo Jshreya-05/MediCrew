@@ -53,10 +53,16 @@ function ECGCanvas({ signal, flagged, color = "#00d4aa" }) {
     ctx.strokeStyle = "rgba(255,255,255,0.04)";
     ctx.lineWidth = 1;
     for (let x = 0; x < W; x += 40) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, H);
+      ctx.stroke();
     }
     for (let y = 0; y < H; y += 30) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(W, y);
+      ctx.stroke();
     }
 
     const min = Math.min(...signal);
@@ -76,8 +82,14 @@ function ECGCanvas({ signal, flagged, color = "#00d4aa" }) {
       ctx.strokeStyle = "rgba(255,77,77,0.5)";
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 3]);
-      ctx.beginPath(); ctx.moveTo(x1, 0); ctx.lineTo(x1, H); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(x2, 0); ctx.lineTo(x2, H); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x1, 0);
+      ctx.lineTo(x1, H);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x2, 0);
+      ctx.lineTo(x2, H);
+      ctx.stroke();
       ctx.setLineDash([]);
       ctx.fillStyle = "rgba(255,77,77,0.8)";
       ctx.font = "11px 'DM Mono', monospace";
@@ -143,7 +155,12 @@ function IdleECG() {
     return () => cancelAnimationFrame(frameRef.current);
   }, []);
 
-  return <canvas ref={canvasRef} style={{ width: "100%", height: "80px", display: "block" }} />;
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ width: "100%", height: "80px", display: "block" }}
+    />
+  );
 }
 
 // ── Probability Bar ──────────────────────────────────────────────
@@ -155,16 +172,37 @@ function ProbBar({ label, value, color, animate }) {
 
   return (
     <div style={{ marginBottom: 14 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 6,
+        }}
+      >
         <span style={{ fontSize: 13, color: "#9ca3af" }}>{label}</span>
-        <span style={{ fontSize: 13, fontWeight: 600, color, fontFamily: "'DM Mono', monospace" }}>
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color,
+            fontFamily: "'DM Mono', monospace",
+          }}
+        >
           {value.toFixed(1)}%
         </span>
       </div>
-      <div style={{ height: 6, borderRadius: 3, background: "rgba(255,255,255,0.06)" }}>
+      <div
+        style={{
+          height: 6,
+          borderRadius: 3,
+          background: "rgba(255,255,255,0.06)",
+        }}
+      >
         <div
           style={{
-            height: "100%", borderRadius: 3, background: color,
+            height: "100%",
+            borderRadius: 3,
+            background: color,
             width: `${width}%`,
             transition: "width 0.8s cubic-bezier(0.34,1.56,0.64,1)",
             boxShadow: `0 0 8px ${color}80`,
@@ -178,18 +216,40 @@ function ProbBar({ label, value, color, animate }) {
 // ── Stat Card ────────────────────────────────────────────────────
 function StatCard({ label, value, sub, color }) {
   return (
-    <div style={{
-      background: "rgba(255,255,255,0.03)",
-      border: "1px solid rgba(255,255,255,0.08)",
-      borderRadius: 12, padding: "18px 20px",
-    }}>
-      <div style={{ fontSize: 11, color: "#6b7280", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
+    <div
+      style={{
+        background: "rgba(255,255,255,0.03)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: 12,
+        padding: "18px 20px",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 11,
+          color: "#6b7280",
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          marginBottom: 8,
+        }}
+      >
         {label}
       </div>
-      <div style={{ fontSize: 26, fontWeight: 700, color: color || "#f9fafb", fontFamily: "'DM Mono', monospace" }}>
+      <div
+        style={{
+          fontSize: 26,
+          fontWeight: 700,
+          color: color || "#f9fafb",
+          fontFamily: "'DM Mono', monospace",
+        }}
+      >
         {value}
       </div>
-      {sub && <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>{sub}</div>}
+      {sub && (
+        <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>
+          {sub}
+        </div>
+      )}
     </div>
   );
 }
@@ -206,51 +266,46 @@ export default function App() {
   const fileInputRef = useRef(null);
 
   const parseFile = (file) => {
-  setFileName(file.name);
-  setResult(null);
-  setError("");
+    setFileName(file.name);
+    setResult(null);
+    setError("");
 
-  const reader = new FileReader();
+    const reader = new FileReader();
 
-  reader.onload = (e) => {
-    try {
-      const text = e.target.result.trim();
-      let parsed = [];
+    reader.onload = (e) => {
+      try {
+        const text = e.target.result.trim();
+        let parsed = [];
 
-      if (file.name.endsWith(".json")) {
-        const json = JSON.parse(text);
+        if (file.name.endsWith(".json")) {
+          const json = JSON.parse(text);
 
-        // ✅ handle both formats
-        if (Array.isArray(json)) {
-          parsed = json;
-        } else if (Array.isArray(json.signal)) {
-          parsed = json.signal;
+          if (Array.isArray(json)) {
+            parsed = json;
+          } else if (Array.isArray(json.signal)) {
+            parsed = json.signal;
+          } else {
+            throw new Error("Invalid JSON format");
+          }
         } else {
-          throw new Error("Invalid JSON format");
+          parsed = text
+            .split(/[\n,\r]+/)
+            .map((v) => parseFloat(v.trim()))
+            .filter((v) => !isNaN(v));
         }
 
-      } else {
-        // ✅ handles comma + newline + spaces
-        parsed = text
-          .split(/[\n,\r]+/)
-          .map(v => parseFloat(v.trim()))
-          .filter(v => !isNaN(v));
+        if (!parsed.length) throw new Error("Empty signal");
+        if (parsed.length < 50) throw new Error("Signal too short");
+
+        setSignal(parsed);
+      } catch (err) {
+        setError("Could not parse file: " + err.message);
+        setSignal(null);
       }
+    };
 
-      // ✅ validation
-      if (!parsed.length) throw new Error("Empty signal");
-      if (parsed.length < 50) throw new Error("Signal too short");
-
-      setSignal(parsed);
-
-    } catch (err) {
-      setError("Could not parse file: " + err.message);
-      setSignal(null);
-    }
+    reader.readAsText(file);
   };
-
-  reader.readAsText(file);
-};
 
   const onDrop = useCallback((e) => {
     e.preventDefault();
@@ -260,12 +315,15 @@ export default function App() {
   }, []);
 
   const loadDemo = () => {
-    const fs = 360, sig = [];
+    const fs = 360,
+      sig = [];
     for (let b = 0; b < 6; b++) {
       for (let t = 0; t < fs * 0.85; t++) {
         const x = t / fs;
-        const qrs = Math.exp(-0.5 * Math.pow(((t % (fs * 0.85)) - 40) / 5, 2)) * 1.5;
-        const p = Math.exp(-0.5 * Math.pow(((t % (fs * 0.85)) - 15) / 8, 2)) * 0.25;
+        const qrs =
+          Math.exp(-0.5 * Math.pow(((t % (fs * 0.85)) - 40) / 5, 2)) * 1.5;
+        const p =
+          Math.exp(-0.5 * Math.pow(((t % (fs * 0.85)) - 15) / 8, 2)) * 0.25;
         const noise = (Math.random() - 0.5) * 0.04;
         sig.push(qrs + p + noise + Math.sin(x * 0.5) * 0.05);
       }
@@ -299,38 +357,66 @@ export default function App() {
     }
   };
 
-  const meta = result ? CLASS_META[result.prediction] : null;
+  // ✅ FIX: use result.rhythm.prediction (not result.prediction)
+  const meta = result ? CLASS_META[result.rhythm.prediction] : null;
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "#0a0d12",
-      color: "#f9fafb",
-      fontFamily: "'DM Sans', sans-serif",
-    }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#0a0d12",
+        color: "#f9fafb",
+        fontFamily: "'DM Sans', sans-serif",
+      }}
+    >
       {/* Header */}
-      <header style={{
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-        padding: "0 32px",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        height: 64,
-        background: "rgba(255,255,255,0.02)",
-        backdropFilter: "blur(10px)",
-        position: "sticky", top: 0, zIndex: 100,
-      }}>
+      <header
+        style={{
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          padding: "0 32px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          height: 64,
+          background: "rgba(255,255,255,0.02)",
+          backdropFilter: "blur(10px)",
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: 8,
-            background: "rgba(0,212,170,0.15)",
-            border: "1px solid rgba(0,212,170,0.3)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" strokeWidth="2.5">
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              background: "rgba(0,212,170,0.15)",
+              border: "1px solid rgba(0,212,170,0.3)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#00d4aa"
+              strokeWidth="2.5"
+            >
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
             </svg>
           </div>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: "-0.01em" }}>
+            <div
+              style={{
+                fontWeight: 700,
+                fontSize: 15,
+                letterSpacing: "-0.01em",
+              }}
+            >
               CardioAI
             </div>
             <div style={{ fontSize: 11, color: "#6b7280" }}>
@@ -338,51 +424,81 @@ export default function App() {
             </div>
           </div>
         </div>
-        <div style={{
-          fontSize: 11, color: "#374151",
-          fontFamily: "'DM Mono', monospace",
-          background: "rgba(255,255,255,0.03)",
-          padding: "4px 12px", borderRadius: 20,
-          border: "1px solid rgba(255,255,255,0.06)",
-        }}>
+        <div
+          style={{
+            fontSize: 11,
+            color: "#374151",
+            fontFamily: "'DM Mono', monospace",
+            background: "rgba(255,255,255,0.03)",
+            padding: "4px 12px",
+            borderRadius: 20,
+            border: "1px solid rgba(255,255,255,0.06)",
+          }}
+        >
           v1.0 · MIT-BIH Model
         </div>
       </header>
 
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: 20, alignItems: "start" }}>
-
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "340px 1fr",
+            gap: 20,
+            alignItems: "start",
+          }}
+        >
           {/* ── Left Panel ── */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-
             {/* Upload Card */}
-            <div style={{
-              background: "rgba(255,255,255,0.02)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: 16, padding: 20,
-            }}>
-              <div style={{ fontSize: 12, color: "#6b7280", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 14 }}>
+            <div
+              style={{
+                background: "rgba(255,255,255,0.02)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: 16,
+                padding: 20,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#6b7280",
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  marginBottom: 14,
+                }}
+              >
                 ECG Input
               </div>
 
               {/* Drop zone */}
               <div
-                onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragging(true);
+                }}
                 onDragLeave={() => setDragging(false)}
                 onDrop={onDrop}
                 onClick={() => fileInputRef.current.click()}
                 style={{
                   border: `1.5px dashed ${dragging ? "#00d4aa" : "rgba(255,255,255,0.12)"}`,
-                  borderRadius: 10, padding: "28px 16px", textAlign: "center",
-                  cursor: "pointer", marginBottom: 12,
+                  borderRadius: 10,
+                  padding: "28px 16px",
+                  textAlign: "center",
+                  cursor: "pointer",
+                  marginBottom: 12,
                   background: dragging ? "rgba(0,212,170,0.04)" : "transparent",
                   transition: "all 0.2s",
                 }}
               >
                 <input
                   ref={fileInputRef}
-                  type="file" accept=".csv,.json" style={{ display: "none" }}
-                  onChange={(e) => e.target.files[0] && parseFile(e.target.files[0])}
+                  type="file"
+                  accept=".csv,.json"
+                  style={{ display: "none" }}
+                  onChange={(e) =>
+                    e.target.files[0] && parseFile(e.target.files[0])
+                  }
                 />
                 <div style={{ fontSize: 24, marginBottom: 8 }}>📂</div>
                 <div style={{ fontSize: 13, color: "#9ca3af" }}>
@@ -394,11 +510,20 @@ export default function App() {
               </div>
 
               {fileName && (
-                <div style={{
-                  fontSize: 12, color: "#00d4aa", fontFamily: "'DM Mono', monospace",
-                  background: "rgba(0,212,170,0.06)", padding: "6px 10px", borderRadius: 6,
-                  marginBottom: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#00d4aa",
+                    fontFamily: "'DM Mono', monospace",
+                    background: "rgba(0,212,170,0.06)",
+                    padding: "6px 10px",
+                    borderRadius: 6,
+                    marginBottom: 12,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
                   ✓ {fileName}
                 </div>
               )}
@@ -406,10 +531,15 @@ export default function App() {
               <button
                 onClick={loadDemo}
                 style={{
-                  width: "100%", padding: "9px 0", marginBottom: 10,
+                  width: "100%",
+                  padding: "9px 0",
+                  marginBottom: 10,
                   background: "rgba(255,255,255,0.04)",
                   border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 8, color: "#9ca3af", fontSize: 13, cursor: "pointer",
+                  borderRadius: 8,
+                  color: "#9ca3af",
+                  fontSize: 13,
+                  cursor: "pointer",
                 }}
               >
                 Load Demo Signal
@@ -419,24 +549,38 @@ export default function App() {
                 onClick={analyze}
                 disabled={!signal || loading}
                 style={{
-                  width: "100%", padding: "10px 0",
-                  background: signal && !loading ? "#00d4aa" : "rgba(0,212,170,0.2)",
-                  border: "none", borderRadius: 8,
+                  width: "100%",
+                  padding: "10px 0",
+                  background:
+                    signal && !loading ? "#00d4aa" : "rgba(0,212,170,0.2)",
+                  border: "none",
+                  borderRadius: 8,
                   color: signal && !loading ? "#0a0d12" : "#4b5563",
-                  fontSize: 14, fontWeight: 700, cursor: signal ? "pointer" : "not-allowed",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: signal ? "pointer" : "not-allowed",
                   transition: "all 0.2s",
-                  boxShadow: signal && !loading ? "0 0 20px rgba(0,212,170,0.3)" : "none",
+                  boxShadow:
+                    signal && !loading
+                      ? "0 0 20px rgba(0,212,170,0.3)"
+                      : "none",
                 }}
               >
                 {loading ? "Analyzing…" : "Run Analysis →"}
               </button>
 
               {error && (
-                <div style={{
-                  marginTop: 10, padding: "8px 12px", borderRadius: 6,
-                  background: "rgba(255,77,77,0.08)", border: "1px solid rgba(255,77,77,0.2)",
-                  fontSize: 12, color: "#ff4d4d",
-                }}>
+                <div
+                  style={{
+                    marginTop: 10,
+                    padding: "8px 12px",
+                    borderRadius: 6,
+                    background: "rgba(255,77,77,0.08)",
+                    border: "1px solid rgba(255,77,77,0.2)",
+                    fontSize: 12,
+                    color: "#ff4d4d",
+                  }}
+                >
                   {error}
                 </div>
               )}
@@ -444,51 +588,111 @@ export default function App() {
 
             {/* Signal Info */}
             {signal && (
-              <div style={{
-                background: "rgba(255,255,255,0.02)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: 16, padding: 20,
-              }}>
-                <div style={{ fontSize: 12, color: "#6b7280", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 14 }}>
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.02)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: 16,
+                  padding: 20,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#6b7280",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    marginBottom: 14,
+                  }}
+                >
                   Signal Info
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                  <StatCard label="Samples" value={signal.length.toLocaleString()} />
-                  <StatCard label="Duration" value={`${(signal.length / 360).toFixed(1)}s`} />
-                  <StatCard label="Min" value={(Math.min(...signal)).toFixed(3)} />
-                  <StatCard label="Max" value={(Math.max(...signal)).toFixed(3)} />
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 10,
+                  }}
+                >
+                  <StatCard
+                    label="Samples"
+                    value={signal.length.toLocaleString()}
+                  />
+                  <StatCard
+                    label="Duration"
+                    value={`${(signal.length / 360).toFixed(1)}s`}
+                  />
+                  <StatCard
+                    label="Min"
+                    value={Math.min(...signal).toFixed(3)}
+                  />
+                  <StatCard
+                    label="Max"
+                    value={Math.max(...signal).toFixed(3)}
+                  />
                 </div>
               </div>
             )}
 
             {/* Result Diagnosis Card */}
             {result && meta && (
-              <div style={{
-                background: meta.bg,
-                border: `1px solid ${meta.border}`,
-                borderRadius: 16, padding: 20,
-                animation: "fadeIn 0.4s ease",
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                  <div style={{
-                    width: 36, height: 36, borderRadius: "50%",
-                    background: `${meta.color}20`,
-                    border: `1.5px solid ${meta.color}`,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 16,
-                  }}>
+              <div
+                style={{
+                  background: meta.bg,
+                  border: `1px solid ${meta.border}`,
+                  borderRadius: 16,
+                  padding: 20,
+                  animation: "fadeIn 0.4s ease",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    marginBottom: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: "50%",
+                      background: `${meta.color}20`,
+                      border: `1.5px solid ${meta.color}`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 16,
+                    }}
+                  >
                     {meta.icon}
                   </div>
                   <div>
-                    <div style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#6b7280",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.06em",
+                      }}
+                    >
                       Diagnosis
                     </div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: meta.color }}>
-                      {meta.short}
+                    <div
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 700,
+                        color: meta.color,
+                      }}
+                    >
+                      {meta?.short}
                     </div>
                   </div>
                 </div>
-                <div style={{ fontSize: 12, color: "#9ca3af", lineHeight: 1.6 }}>
+                <div
+                  style={{ fontSize: 12, color: "#9ca3af", lineHeight: 1.6 }}
+                >
                   {meta.message}
                 </div>
               </div>
@@ -497,22 +701,44 @@ export default function App() {
 
           {/* ── Right Panel ── */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-
             {/* ECG Chart */}
-            <div style={{
-              background: "rgba(255,255,255,0.02)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: 16, padding: 20,
-            }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                <div style={{ fontSize: 12, color: "#6b7280", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+            <div
+              style={{
+                background: "rgba(255,255,255,0.02)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: 16,
+                padding: 20,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 16,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#6b7280",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                  }}
+                >
                   ECG Waveform
                 </div>
                 {result?.flagged_segment && (
-                  <div style={{
-                    fontSize: 11, color: "#ff4d4d", background: "rgba(255,77,77,0.1)",
-                    padding: "3px 10px", borderRadius: 20, border: "1px solid rgba(255,77,77,0.2)",
-                  }}>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "#ff4d4d",
+                      background: "rgba(255,77,77,0.1)",
+                      padding: "3px 10px",
+                      borderRadius: 20,
+                      border: "1px solid rgba(255,77,77,0.2)",
+                    }}
+                  >
                     ⚠ Anomaly flagged
                   </div>
                 )}
@@ -530,20 +756,32 @@ export default function App() {
 
             {/* Probabilities */}
             {result && (
-              <div style={{
-                background: "rgba(255,255,255,0.02)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: 16, padding: 20,
-                animation: "fadeIn 0.4s ease",
-              }}>
-                <div style={{ fontSize: 12, color: "#6b7280", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 18 }}>
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.02)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: 16,
+                  padding: 20,
+                  animation: "fadeIn 0.4s ease",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#6b7280",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    marginBottom: 18,
+                  }}
+                >
                   Class Probabilities
                 </div>
-                {CLASS_META.map((cls, i) => (
+                {CLASS_META.map((cls) => (
                   <ProbBar
                     key={cls.short}
                     label={cls.label}
-                    value={result.probabilities[cls.label] ?? 0}
+                    // ✅ already correct — rhythm.probabilities is the right path
+                    value={result?.rhythm?.probabilities?.[cls.label] ?? 0}
                     color={cls.color}
                     animate={animateBars}
                   />
@@ -552,20 +790,25 @@ export default function App() {
             )}
 
             {/* Stats row */}
-            {result && (
-              <div style={{
-                display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12,
-                animation: "fadeIn 0.5s ease",
-              }}>
+            {result && meta && (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, 1fr)",
+                  gap: 12,
+                  animation: "fadeIn 0.5s ease",
+                }}
+              >
                 <StatCard
                   label="Prediction"
-                  value={meta.short}
+                  value={meta?.short}
                   color={meta.color}
                   sub={meta.severity}
                 />
                 <StatCard
                   label="Confidence"
-                  value={`${(result.probabilities[meta.label]).toFixed(1)}%`}
+                  // ✅ FIX: use result.rhythm.probabilities[meta.label]
+                  value={`${result.rhythm.probabilities[meta.label].toFixed(1)}%`}
                   color={meta.color}
                   sub="top class"
                 />
@@ -580,12 +823,18 @@ export default function App() {
 
             {/* Empty state */}
             {!signal && !result && (
-              <div style={{
-                background: "rgba(255,255,255,0.02)",
-                border: "1px solid rgba(255,255,255,0.06)",
-                borderRadius: 16, padding: 48, textAlign: "center",
-              }}>
-                <div style={{ fontSize: 40, marginBottom: 16, opacity: 0.3 }}>🫀</div>
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.02)",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  borderRadius: 16,
+                  padding: 48,
+                  textAlign: "center",
+                }}
+              >
+                <div style={{ fontSize: 40, marginBottom: 16, opacity: 0.3 }}>
+                  🫀
+                </div>
                 <div style={{ fontSize: 14, color: "#4b5563" }}>
                   Upload an ECG file or load the demo signal to begin analysis.
                 </div>
