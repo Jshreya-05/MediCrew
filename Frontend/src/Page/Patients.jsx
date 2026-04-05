@@ -4,25 +4,27 @@ import { API_BASE } from "../config.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
 const card = {
-  background: "rgba(255,255,255,0.02)",
-  border: "1px solid rgba(255,255,255,0.08)",
+  background: "#ffffff",
+  border: "1px solid #e5e7eb",
   borderRadius: 14,
   padding: 20,
+  boxShadow: "0 1px 2px rgba(0, 0, 0, 0.03)",
 };
 
 const input = {
   width: "100%",
   padding: "10px 12px",
   borderRadius: 8,
-  border: "1px solid rgba(255,255,255,0.12)",
-  background: "rgba(0,0,0,0.25)",
-  color: "#f9fafb",
+  border: "1px solid #d1d5db",
+  background: "#ffffff",
+  color: "#111827",
   fontSize: 14,
   marginBottom: 12,
   boxSizing: "border-box",
+  transition: "border-color 0.2s",
 };
 
-const label = { display: "block", fontSize: 12, color: "#9ca3af", marginBottom: 6 };
+const label = { display: "block", fontSize: 12, color: "#4b5563", marginBottom: 6, fontWeight: 500 };
 
 async function authFetch(token, path, opts = {}) {
   const r = await fetch(`${API_BASE}${path}`, {
@@ -223,43 +225,43 @@ export default function Patients() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#070a0f", color: "#f9fafb", fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#ffffff", color: "#111827", fontFamily: "'DM Sans', sans-serif" }}>
       <header style={{
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        borderBottom: "1px solid #e5e7eb",
         padding: "0 28px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         height: 60,
-        background: "rgba(255,255,255,0.02)",
+        background: "#ffffff",
         position: "sticky",
         top: 0,
         zIndex: 50,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <Link to="/" style={{ color: "#00d4aa", textDecoration: "none", fontWeight: 700, fontSize: 15 }}>← Analyzer</Link>
+          <Link to="/" style={{ color: "#dc2626", textDecoration: "none", fontWeight: 700, fontSize: 15 }}>← Analyzer</Link>
           <span style={{ color: "#6b7280", fontSize: 13 }}>Patient records</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 12, color: "#9ca3af" }}>{user?.full_name || user?.email}</span>
-          <button type="button" onClick={logout} style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.12)", background: "transparent", color: "#d1d5db", fontSize: 12, cursor: "pointer" }}>Log out</button>
+          <span style={{ fontSize: 12, color: "#4b5563" }}>{user?.full_name || user?.email}</span>
+          <button type="button" onClick={logout} style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid #d1d5db", background: "transparent", color: "#374151", fontSize: 12, cursor: "pointer" }}>Log out</button>
         </div>
       </header>
 
       <div style={{ maxWidth: 1040, margin: "0 auto", padding: "28px 20px 48px" }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Patients</h1>
-        <p style={{ color: "#6b7280", fontSize: 14, marginBottom: 28, lineHeight: 1.5 }}>
-          Create a hospital / clinic <strong style={{ color: "#9ca3af" }}>patient ID</strong>, store demographics, vitals, free-text reports, and link ECG runs from the analyzer. Export a combined <strong style={{ color: "#9ca3af" }}>PDF</strong> for the chart.
+        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8, color: "#111827" }}>Patients</h1>
+        <p style={{ color: "#4b5563", fontSize: 14, marginBottom: 28, lineHeight: 1.5 }}>
+          Create a hospital / clinic <strong style={{ color: "#111827" }}>patient ID</strong>, store demographics, vitals, free-text reports, and link ECG runs from the analyzer. Export a combined <strong style={{ color: "#111827" }}>PDF</strong> for the chart.
         </p>
 
         {err && (
-          <div role="alert" style={{ marginBottom: 20, padding: 12, borderRadius: 8, background: "rgba(255,77,77,0.1)", border: "1px solid rgba(255,77,77,0.25)", color: "#ff6b6b", fontSize: 13 }}>
+          <div role="alert" style={{ marginBottom: 20, padding: 12, borderRadius: 8, background: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.25)", color: "#b91c1c", fontSize: 13 }}>
             {err}
           </div>
         )}
 
         <div style={{ ...card, marginBottom: 24 }}>
-          <div style={{ fontSize: 12, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 16 }}>Register new patient</div>
+          <div style={{ fontSize: 12, color: "#4b5563", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 16 }}>Register new patient</div>
           <form onSubmit={createPatient} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "0 16px" }}>
             <div>
               <label style={label}>Patient ID (you assign)</label>
@@ -294,7 +296,7 @@ export default function Patients() {
               <textarea style={{ ...input, minHeight: 72, resize: "vertical" }} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
-              <button type="submit" style={{ padding: "10px 22px", borderRadius: 8, border: "none", background: "#00d4aa", color: "#070a0f", fontWeight: 700, cursor: "pointer" }}>Save patient</button>
+              <button type="submit" style={{ padding: "10px 22px", borderRadius: 8, border: "none", background: "#dc2626", color: "#ffffff", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>Save patient</button>
             </div>
           </form>
         </div>
@@ -306,14 +308,14 @@ export default function Patients() {
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {patients.map((p) => (
-              <div key={p.id} style={{ ...card, borderColor: expandedId === p.id ? "rgba(0,212,170,0.25)" : "rgba(255,255,255,0.08)" }}>
+              <div key={p.id} style={{ ...card, borderColor: expandedId === p.id ? "rgba(220,38,38,0.4)" : "#e5e7eb" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
                   <button
                     type="button"
                     onClick={() => toggleExpand(p.id)}
-                    style={{ textAlign: "left", background: "none", border: "none", color: "#f9fafb", cursor: "pointer", padding: 0 }}
+                    style={{ textAlign: "left", background: "none", border: "none", color: "#111827", cursor: "pointer", padding: 0 }}
                   >
-                    <div style={{ fontFamily: "'DM Mono', monospace", color: "#00d4aa", fontSize: 13 }}>{p.patient_code}</div>
+                    <div style={{ fontFamily: "'DM Mono', monospace", color: "#dc2626", fontSize: 13 }}>{p.patient_code}</div>
                     <div style={{ fontSize: 17, fontWeight: 600, marginTop: 4 }}>{p.full_name}</div>
                     <div style={{ fontSize: 12, color: "#6b7280", marginTop: 6 }}>
                       {[p.age != null && `${p.age} yrs`, p.gender, p.blood_group].filter(Boolean).join(" · ") || "No demographics yet"}
@@ -321,13 +323,13 @@ export default function Patients() {
                     </div>
                   </button>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                    <button type="button" onClick={() => exportPdf(p.id)} style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid rgba(0,212,170,0.35)", background: "rgba(0,212,170,0.08)", color: "#00d4aa", fontSize: 12, cursor: "pointer" }}>PDF (demographics + notes)</button>
+                    <button type="button" onClick={() => exportPdf(p.id)} style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid rgba(220,38,38,0.35)", background: "rgba(220,38,38,0.08)", color: "#dc2626", fontSize: 12, cursor: "pointer", fontWeight: 500 }}>PDF (demographics + notes)</button>
                   </div>
                 </div>
 
                 {expandedId === p.id && (
-                  <div style={{ marginTop: 22, paddingTop: 22, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                    <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>Edit & save</div>
+                  <div style={{ marginTop: 22, paddingTop: 22, borderTop: "1px solid #e5e7eb" }}>
+                    <div style={{ fontSize: 12, color: "#4b5563", marginBottom: 12, fontWeight: 500 }}>Edit & save</div>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
                       <input style={input} value={p.full_name} onChange={(e) => updateLocalPatient(p.id, { full_name: e.target.value })} />
                       <input style={input} type="number" placeholder="Age" value={p.age ?? ""} onChange={(e) => updateLocalPatient(p.id, { age: e.target.value === "" ? null : parseInt(e.target.value, 10) })} />
@@ -337,18 +339,18 @@ export default function Patients() {
                       <input style={input} type="number" placeholder="Diastolic" value={p.bp_diastolic ?? ""} onChange={(e) => updateLocalPatient(p.id, { bp_diastolic: e.target.value === "" ? null : parseInt(e.target.value, 10) })} />
                     </div>
                     <textarea style={{ ...input, minHeight: 70, marginTop: 8 }} placeholder="Clinical notes" value={p.notes || ""} onChange={(e) => updateLocalPatient(p.id, { notes: e.target.value })} />
-                    <button type="button" onClick={() => saveDemographics(patients.find((x) => x.id === p.id))} style={{ marginTop: 8, padding: "8px 16px", borderRadius: 8, border: "none", background: "#374151", color: "#fff", fontSize: 13, cursor: "pointer" }}>Save changes</button>
+                    <button type="button" onClick={() => saveDemographics(patients.find((x) => x.id === p.id))} style={{ marginTop: 8, padding: "8px 16px", borderRadius: 8, border: "1px solid #e5e7eb", background: "#f9fafb", color: "#1f2937", fontSize: 13, cursor: "pointer", fontWeight: 500 }}>Save changes</button>
 
                     <div style={{ marginTop: 24 }}>
-                      <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 10 }}>ECG reports linked to this patient</div>
+                      <div style={{ fontSize: 12, color: "#4b5563", marginBottom: 10, fontWeight: 500 }}>ECG reports linked to this patient</div>
                       {(ecgItems[p.id] || []).length === 0 ? (
-                        <p style={{ fontSize: 13, color: "#4b5563" }}>None yet — run analysis on the analyzer with this patient selected.</p>
+                        <p style={{ fontSize: 13, color: "#6b7280" }}>None yet — run analysis on the analyzer with this patient selected.</p>
                       ) : (
                         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                           {(ecgItems[p.id] || []).map((t) => (
-                            <li key={t.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                              <span style={{ fontSize: 13 }}>{t.file_name} · {t.rhythm_label || "—"}</span>
-                              <button type="button" onClick={() => exportPdf(p.id, t.id)} style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.04)", color: "#9ca3af", fontSize: 11, cursor: "pointer" }}>PDF with this ECG</button>
+                            <li key={t.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "10px 0", borderBottom: "1px solid #f0f0f0" }}>
+                              <span style={{ fontSize: 13, color: "#111827" }}>{t.file_name} · {t.rhythm_label || "—"}</span>
+                              <button type="button" onClick={() => exportPdf(p.id, t.id)} style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 6, border: "1px solid #e5e7eb", background: "#ffffff", color: "#4b5563", fontSize: 11, cursor: "pointer" }}>PDF with this ECG</button>
                             </li>
                           ))}
                         </ul>
@@ -356,19 +358,19 @@ export default function Patients() {
                     </div>
 
                     <div style={{ marginTop: 24 }}>
-                      <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 10 }}>Other reports / labs (free text)</div>
+                      <div style={{ fontSize: 12, color: "#4b5563", marginBottom: 10, fontWeight: 500 }}>Other reports / labs (free text)</div>
                       {(notesItems[p.id] || []).map((n) => (
-                        <div key={n.id} style={{ marginBottom: 12, padding: 12, borderRadius: 8, background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                          <div style={{ fontWeight: 600, fontSize: 13 }}>{n.title} <span style={{ color: "#6b7280", fontWeight: 400 }}>({n.category})</span></div>
-                          <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 6, whiteSpace: "pre-wrap" }}>{n.content}</div>
-                          <div style={{ fontSize: 10, color: "#4b5563", marginTop: 6 }}>{new Date(n.created_at).toLocaleString()}</div>
+                        <div key={n.id} style={{ marginBottom: 12, padding: 12, borderRadius: 8, background: "#f9fafb", border: "1px solid #e5e7eb" }}>
+                          <div style={{ fontWeight: 600, fontSize: 13, color: "#111827" }}>{n.title} <span style={{ color: "#6b7280", fontWeight: 400 }}>({n.category})</span></div>
+                          <div style={{ fontSize: 12, color: "#4b5563", marginTop: 6, whiteSpace: "pre-wrap" }}>{n.content}</div>
+                          <div style={{ fontSize: 10, color: "#6b7280", marginTop: 6 }}>{new Date(n.created_at).toLocaleString()}</div>
                         </div>
                       ))}
                       <div style={{ marginTop: 14 }}>
                         <input style={input} placeholder="Report title" value={noteForm.title} onChange={(e) => setNoteForm({ ...noteForm, title: e.target.value })} />
                         <input style={input} placeholder="Category (lab / vitals / other)" value={noteForm.category} onChange={(e) => setNoteForm({ ...noteForm, category: e.target.value })} />
                         <textarea style={{ ...input, minHeight: 80 }} placeholder="Report content" value={noteForm.content} onChange={(e) => setNoteForm({ ...noteForm, content: e.target.value })} />
-                        <button type="button" onClick={() => addNote(p.id)} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "#00d4aa", color: "#070a0f", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Add report</button>
+                        <button type="button" onClick={() => addNote(p.id)} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "#dc2626", color: "#ffffff", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Add report</button>
                       </div>
                     </div>
                   </div>
@@ -381,6 +383,11 @@ export default function Patients() {
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap');
+        input:focus, textarea:focus, button:focus {
+          outline: none;
+          border-color: #dc2626;
+          ring: 2px solid rgba(220,38,38,0.2);
+        }
       `}</style>
     </div>
   );

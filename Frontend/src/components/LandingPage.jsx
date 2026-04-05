@@ -1,10 +1,12 @@
 // Landing.jsx
 import { Link } from "react-router-dom";
 import Footer from "./Footer";
+import Header from "./Header";
 
 export default function Landing() {
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", position: "relative" }}>
+      <Header/>
       {/* Background Image (hospital) */}
       <div
         style={{
@@ -187,7 +189,7 @@ export default function Landing() {
         </Link>
       </section>
 
-      <Footer />
+      
 
       {/* Animations */}
       <style>{`

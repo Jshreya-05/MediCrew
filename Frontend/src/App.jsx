@@ -5,6 +5,7 @@ import Login from "./Page/Login.jsx";
 import Patients from "./Page/Patients.jsx";
 import Signup from "./Page/Signup.jsx";
 import Home from "./Page/Home.jsx";
+import ECGImageUpload from './Page/ECGImageUpload.jsx'
 
 function BootGate({ children }) {
   const { bootstrapping } = useAuth();
@@ -34,7 +35,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            
+            <Route path="/upload" element={<ECGImageUpload/>}/>
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/patients" element={<Patients />} />
