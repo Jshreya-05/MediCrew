@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
 import Login from "./Page/Login.jsx";
 import Patients from "./Page/Patients.jsx";
 import Signup from "./Page/Signup.jsx";
+import Home from "./Page/Home.jsx";
 
 function BootGate({ children }) {
   const { bootstrapping } = useAuth();
@@ -31,7 +32,9 @@ export default function App() {
       <AuthProvider>
         <BootGate>
           <Routes>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/patients" element={<Patients />} />

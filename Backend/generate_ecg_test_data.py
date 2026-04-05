@@ -1,33 +1,49 @@
+# generate_ecg_test_data.py
 import numpy as np
-import pandas as pd
 import json
+import os
 
-# ── Step 1: Generate ECG-like signal ──
-length = 187
-t = np.linspace(0, 1, length)
+# ── Parameters ─────────────────────────────
+fs = 360               # Sampling frequency (Hz)
+duration_min = 6       # Duration in minutes
+hr_bpm = 72            # Approximate heart rate (beats per minute)
 
-# Simulated ECG waveform (sine + noise)
-signal = 0.6 * np.sin(2 * np.pi * 5 * t) + 0.15 * np.random.randn(length)
+# ── Derived parameters ────────────────────
+duration_sec = duration_min * 60
+samples = duration_sec * fs
+rr_sec = 60 / hr_bpm
+rr_samples = int(rr_sec * fs)
 
-# ── Step 2: Save as CSV ──
-df = pd.DataFrame([signal])
-csv_path = "test_ecg.csv"
-df.to_csv(csv_path, index=False, header=False)
+# ── Time array ────────────────────────────
+t = np.arange(samples) / fs
 
-print(f"✅ CSV saved → {csv_path}")
+# ── Gaussian-shaped ECG pulse ────────────
+def gaussian_pulse(length=50, height=1.0):
+    x = np.linspace(-1, 1, length)
+    return height * np.exp(-5 * x**2)
 
-# ── Step 3: Convert to JSON (API format) ──
-json_data = {
-    "signal": signal.tolist(),
-    "fs": 360
+# ── Generate single-lead ECG signal ──────
+signal = np.zeros(samples)
+for i in range(0, samples, rr_samples):
+    if i + 50 < samples:
+        signal[i:i+50] += gaussian_pulse(length=50, height=1.0)
+
+# ── Add small random noise ───────────────
+signal += np.random.normal(0, 0.02, size=samples)
+
+# ── Prepare JSON data ────────────────────
+data = {
+    "signal": signal.tolist(),   # ECG voltage array
+    "fs": fs,                    # Sampling frequency
+    "duration_min": duration_min,
+    "heart_rate_bpm": hr_bpm,
+    "total_samples": samples
 }
 
-json_path = "test_ecg.json"
-with open(json_path, "w") as f:
-    json.dump(json_data, f, indent=2)
+# ── Save to JSON ─────────────────────────
+output_file = "synthetic_ecg_6min.json"
+with open(output_file, "w") as f:
+    json.dump(data, f, indent=4)
 
-print(f"✅ JSON saved → {json_path}")
-
-# ── Step 4: Print preview ──
-print("\n📦 Sample JSON:")
-print(json.dumps(json_data, indent=2)[:500])  # preview first part
+print(f"✓ {output_file} generated successfully")
+print(f"Total samples: {samples}, Approx. beats: {samples // rr_samples}")

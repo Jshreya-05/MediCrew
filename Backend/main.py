@@ -6,6 +6,7 @@ Start: uvicorn main:app --reload --port 8000
 
 import json
 import os
+from collections import Counter
 
 import numpy as np
 from fastapi import Depends, FastAPI, HTTPException, Query
@@ -16,6 +17,7 @@ from sqlalchemy.orm import Session
 
 import db_models  # noqa: F401 — register ORM tables with Base.metadata
 from auth_deps import get_current_user
+from scipy.signal import find_peaks
 from database import Base, engine, get_db, migrate_schema_v2, migrate_sqlite_users
 from db_models import ECGTest, Patient, PatientClinicalNote, User
 from security import create_access_token, hash_password, verify_password
@@ -41,28 +43,33 @@ DISEASE_CLASSES = ["Normal Heart", "Myocardial Infarction"]
 # ── Load both models once at startup ────────────────────────────
 model_mitbih  = None
 model_ptb     = None
-USE_CNN       = False
 
 @app.on_event("startup")
 def load_models():
-    global model_mitbih, model_ptb, USE_CNN
+    global model_mitbih, model_ptb
 
     Base.metadata.create_all(bind=engine)
     migrate_sqlite_users()
     migrate_schema_v2()
 
-    # Try CNN (.h5) first, fallback to sklearn (.pkl)
+    # Try .keras first, then .h5, then fallback to .pkl
     try:
         import tensorflow as tf
-        if os.path.exists("models/model_mitbih.h5"):
+        if os.path.exists("models/model_mitbih_cnn.keras"):
+            model_mitbih = tf.keras.models.load_model("models/model_mitbih_cnn.keras")
+            print("✓ Loaded model_mitbih_cnn.keras (CNN)")
+        elif os.path.exists("models/model_mitbih.h5"):
             model_mitbih = tf.keras.models.load_model("models/model_mitbih.h5")
-            USE_CNN = True
             print("✓ Loaded model_mitbih.h5 (CNN)")
-        if os.path.exists("models/model_ptb.h5"):
+
+        if os.path.exists("models/model_ptb_cnn.keras"):
+            model_ptb = tf.keras.models.load_model("models/model_ptb_cnn.keras")
+            print("✓ Loaded model_ptb_cnn.keras (CNN)")
+        elif os.path.exists("models/model_ptb.h5"):
             model_ptb = tf.keras.models.load_model("models/model_ptb.h5")
             print("✓ Loaded model_ptb.h5 (CNN)")
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"⚠ TensorFlow load failed: {e} — falling back to sklearn")
 
     if model_mitbih is None:
         import joblib
@@ -150,50 +157,130 @@ def user_public(user: User) -> dict:
     }
 
 
-def run_prediction(model, signal_1d: np.ndarray, class_names: list, use_cnn: bool) -> dict:
-    """Run one model and return label + probabilities."""
-    if use_cnn:
-        x = signal_1d.reshape(1, 187, 1)
-        probs = model.predict(x, verbose=0)[0]
-    else:
-        x = signal_1d.reshape(1, -1)
-        probs = model.predict_proba(x)[0]
+# ── Unified prediction (auto‑detects Keras vs sklearn) ──────────
+def run_prediction(model, signal_1d: np.ndarray, class_names: list) -> dict:
+    """
+    Automatically detect model type (Keras CNN vs sklearn RandomForest)
+    and run prediction.
+    """
+    try:
+        # Check if it's a Keras model (has 'predict' method and 'layers' attribute)
+        if hasattr(model, 'predict') and hasattr(model, 'layers'):
+            # CNN expects shape (1, 187, 1)
+            x = signal_1d.reshape(1, 187, 1)
+            probs = model.predict(x, verbose=0)[0]
+        # Check for sklearn / joblib models
+        elif hasattr(model, 'predict_proba'):
+            x = signal_1d.reshape(1, -1)
+            probs = model.predict_proba(x)[0]
+        else:
+            raise TypeError(f"Unknown model type: {type(model)}")
+    except Exception as e:
+        raise RuntimeError(f"Prediction failed: {e}")
 
     pred = int(np.argmax(probs))
     return {
-        "prediction":    pred,
-        "label":         class_names[pred],
-        "confidence":    round(float(probs[pred]) * 100, 1),
-        "probabilities": {
-            class_names[i]: round(float(p) * 100, 1)
-            for i, p in enumerate(probs)
-        },
+        "prediction": pred,
+        "label": class_names[pred],
+        "confidence": round(float(probs[pred]) * 100, 1),
+        "probabilities": {class_names[i]: round(float(p) * 100, 1) for i, p in enumerate(probs)},
     }
 
 
-# ── Main predict endpoint ────────────────────────────────────────
+def predict_on_peaks(model, raw: np.ndarray, peaks: np.ndarray, fs: int) -> dict:
+    """
+    Slice a 187-sample window around each detected R-peak, run the model on
+    every beat, and return the majority-vote result plus per-beat details.
+    """
+    half = 93  # samples before the R-peak
+    beat_results = []
+
+    for p in peaks:
+        start = p - half
+        end   = start + 187
+        if start < 0 or end > len(raw):
+            continue
+        segment = preprocess_signal(raw[start:end].tolist(), fs)
+        beat_results.append(run_prediction(model, segment, RHYTHM_CLASSES))
+
+    if not beat_results:
+        # Fallback: classify the whole (preprocessed) signal as one beat
+        segment = preprocess_signal(raw.tolist(), fs)
+        return run_prediction(model, segment, RHYTHM_CLASSES)
+
+    # Majority vote across all beats
+    labels     = [r["label"] for r in beat_results]
+    vote_label = Counter(labels).most_common(1)[0][0]
+    vote_pred  = RHYTHM_CLASSES.index(vote_label)
+
+    # Average confidence for the winning class
+    winning_confs = [
+        r["probabilities"][vote_label]
+        for r in beat_results
+    ]
+    avg_conf = round(sum(winning_confs) / len(winning_confs), 1)
+
+    # Average probability across all beats for every class
+    avg_probs = {
+        cls: round(
+            sum(r["probabilities"][cls] for r in beat_results) / len(beat_results), 1
+        )
+        for cls in RHYTHM_CLASSES
+    }
+
+    return {
+        "prediction":    vote_pred,
+        "label":         vote_label,
+        "confidence":    avg_conf,
+        "probabilities": avg_probs,
+        "beats_analysed": len(beat_results),
+    }
+
+
 @app.post("/predict")
 def predict(data: ECGInput):
     if len(data.signal) < 50:
         raise HTTPException(400, "Signal too short — need at least 50 samples")
 
-    # 1. Preprocess (filter, normalize, pad/trim to 187)
-    processed = preprocess_signal(data.signal, data.fs)
+    raw = np.asarray(data.signal, dtype=np.float64)
+    fs  = int(data.fs)
 
-    # 2. Run BOTH models on the same processed signal
-    rhythm_result  = run_prediction(model_mitbih, processed, RHYTHM_CLASSES,  USE_CNN)
-    disease_result = run_prediction(model_ptb,    processed, DISEASE_CLASSES, USE_CNN)
+    # 1. Preprocess full signal (filter + normalise, pad/trim to 187)
+    processed = preprocess_signal(data.signal, fs)
 
-    # 3. Find anomalous segment for explainability
+    # 2. R‑peak detection with robust threshold
+    height_threshold   = np.percentile(raw, 90) * 0.5
+    distance_threshold = int(0.4 * fs)  # 400 ms → max ~150 bpm
+
+    peaks, _ = find_peaks(raw, height=height_threshold, distance=distance_threshold)
+
+    if len(peaks) < 3:
+        rr_intervals = []
+        heart_rate   = 0
+    else:
+        rr_intervals = [(peaks[i + 1] - peaks[i]) / fs for i in range(len(peaks) - 1)]
+        heart_rate   = round(60 / (sum(rr_intervals) / len(rr_intervals)), 1)
+
+    # 3. Rhythm model — per-beat sliding window + majority vote
+    rhythm_result = predict_on_peaks(model_mitbih, raw, peaks, fs)
+
+    # 4. Disease model — single processed beat (PTB trained on single beats)
+    disease_result = run_prediction(model_ptb, processed, DISEASE_CLASSES)
+
+    # 5. Anomalous segment for explainability
     flagged = get_flagged_segment(processed)
 
-    # 4. Compute combined alert level
+    # 6. Combined alert level
     alert = _combined_alert(rhythm_result["prediction"], disease_result["prediction"])
 
-    # 5. Time-domain metrics on full input (same fs as request)
-    raw = np.asarray(data.signal, dtype=np.float64)
-    metrics = compute_ecg_metrics(raw, int(data.fs))
-    metrics["rhythm_label"] = rhythm_result["label"]
+    # 7. Time-domain metrics on full raw signal
+    metrics = compute_ecg_metrics(raw, fs)
+    metrics.update({
+        "rhythm_label": rhythm_result["label"],
+        "peaks":        peaks.tolist(),
+        "rr_intervals": rr_intervals,
+        "heart_rate":   heart_rate,
+    })
 
     return {
         "rhythm":           rhythm_result,
